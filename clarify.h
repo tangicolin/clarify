@@ -6,6 +6,14 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define PRINT_OK(nb,given,when,then) printf("ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n",nb,given,when,then)
+
+#define PRINT_KO(nb,given,when,then) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n ---\n",nb,given,when,then,__FILE__, __LINE__)
+
+#define PRINT_KO_FORMAT_STRING(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n  Expected:%s\n  Actual:%s\n ---\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
+
+#define PRINT_KO_FORMAT_HEX(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n  Expected:0x%x\n  Actual:0x%x\n ---\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
+
 /*
     Require that the expression evaluates to true.
 */
@@ -13,57 +21,18 @@
     do { \
         if (!(boolean_test)) { \
             test_count_failed++; \
-            printf("FAIL: %s:%d\n", \
-                __FILE__, __LINE__); \
-            printf("  Given: %s\n", this_test.given); \
-            printf("   When: %s\n", this_test.when); \
-            printf("   Then: %s\n", this_test.then); \
-            printf("REQUIRE( %s )\n", #boolean_test); \
-            printf("\n"); \
+            testNumber++; \
+            PRINT_KO(testNumber,this_test.given,this_test.when,this_test.then); \
             return; \
         } \
     } while (0)
-
-/*
-    Require that the actual value matches the expected value. If there is an
-    error, the provided printf-style format_string is used to print the value.
-*/
-#if 0
-#define REQUIRE_EQUAL_FORMAT(expected, actual, format_string) \
-    do {\
-        if (!((expected) == (actual))) { \
-            test_count_failed++; \
-            printf("---------------------------------------------------\n"); \
-            printf("Test at %s:%d FAILED\n", \
-                __FILE__, this_test.starting_line_number); \
-            printf("---------------------------------------------------\n"); \
-            printf("  Given: %s\n", this_test.given); \
-            printf("   When: %s\n", this_test.when); \
-            printf("   Then: %s\n", this_test.then); \
-            printf("---------------------------------------------------\n"); \
-            printf("FAILED at %s:%d:\n", \
-                __FILE__, __LINE__); \
-            printf("  Expected: " #format_string "\n", expected); \
-            printf("  Actual  : " #format_string "\n ", actual); \
-            printf("---------------------------------------------------\n"); \
-            printf("\n"); \
-            return; \
-        } \
-    } while (0)
-#endif
 
 #define REQUIRE_EQUAL_FORMAT(expected, actual, format_string)       \
     do {                                                            \
         if (!((expected) == (actual))) {                            \
             test_count_failed++;                                    \
-            printf("FAIL: %s:%d \n",                                \
-                __FILE__, __LINE__);                                \
-            printf("  Given: %s\n", this_test.given);               \
-            printf("   When: %s\n", this_test.when);                \
-            printf("   Then: %s\n", this_test.then);                \
-            printf("Expected: " #format_string "\n", expected);     \
-            printf("Actual  : " #format_string "\n ", actual);      \
-            printf("\n");                                           \
+            testNumber++; \
+            PRINT_KO_FORMAT_HEX(testNumber,this_test.given,this_test.when,this_test.then,expected,actual); \
             return;                                                 \
         }                                                           \
     } while (0)
@@ -77,14 +46,8 @@
     do {                                                            \
         if (strcmp(expected, actual) != 0) {                        \
             test_count_failed++;                                    \
-            printf("FAIL: %s:%d \n",                                \
-                __FILE__, __LINE__);                                \
-            printf("  Given: %s\n", this_test.given);               \
-            printf("   When: %s\n", this_test.when);                \
-            printf("   Then: %s\n", this_test.then);                \
-            printf("Expected: %s\n", expected);                     \
-            printf("Actual  : %s\n ", actual);                      \
-            printf("\n");                                           \
+            testNumber++;\
+            PRINT_KO_FORMAT_STRING(testNumber,this_test.given,this_test.when,this_test.then,expected,actual); \
             return;                                                 \
         }                                                           \
     } while (0)
@@ -93,12 +56,8 @@
 do {                                                            \
     if (memcmp(expected_ptr, actual_ptr, size) != 0) {          \
         test_count_failed++;                                    \
-        printf("FAIL: %s:%d \n",                                \
-            __FILE__, __LINE__);                                \
-        printf("  Given: %s\n", this_test.given);               \
-        printf("   When: %s\n", this_test.when);                \
-        printf("   Then: %s\n", this_test.then);                \
-        printf("\n");                                           \
+        testNumber++; \
+        PRINT_KO(testNumber,this_test.given,this_test.when,this_test.then); \
         return;                                                 \
     }                                                           \
 } while (0)
@@ -121,6 +80,9 @@ typedef struct {
                                     // clause to be executed.
 } TEST_CASE;
 
+static int testNumber = 0;
+
+
 // Create a unique test function name for each test function, based on the line
 // number. We need two levels of indirection to get the line number to be
 // evaluated during the string concatentation.
@@ -130,23 +92,19 @@ typedef struct {
 #define UNIQUE_TEST_FUNCTION_NAME TOKENPASTE2(test_, __LINE__)
 
 #define PRINT_HEADER() \
-    printf("---------------------------------------------------\n"); \
-    printf("%s: Running Tests...\n", __FILE__); \
-    printf("---------------------------------------------------\n"); \
+    printf("#---------------------------------------------------\n"); \
+    printf("# %s: Running Tests...\n", __FILE__); \
+    printf("#---------------------------------------------------\n"); \
 
 #define PRINT_RESULTS() \
-    printf("\n"); \
-    printf("---------------------------------------------------\n"); \
-    printf("%s: Test Results\n", __FILE__); \
-    printf("---------------------------------------------------\n"); \
-    printf("Tested: %d\n", test_count_total); \
-    printf("Passed: %d\n", test_count_total - test_count_failed); \
-    printf("Failed: %d\n", test_count_failed);
+    printf("#Failed: %d\n", test_count_failed); \
+    printf("1..%d\n",test_count_total); \
 
 #define RUN_TESTS() \
     TEST_CASE this_test; \
     int test_count_total = 0; \
     int test_count_failed = 0; \
+    int previous_test_count_failed = 0;\
     void all_tests(void); \
     int main(void) {\
         PRINT_HEADER(); \
@@ -166,6 +124,15 @@ typedef struct {
         this_test.test_executed_this_pass = false; \
         UNIQUE_TEST_FUNCTION_NAME(); \
     } while (this_test.test_executed_this_pass); \
+            if(test_count_failed > previous_test_count_failed)\
+            { \
+                previous_test_count_failed = test_count_failed; \
+            } \
+            else \
+            { \
+                testNumber++; \
+                PRINT_OK(testNumber,this_test.given,this_test.when,this_test.then); \
+            } \
     void UNIQUE_TEST_FUNCTION_NAME (void)
 
 #define WHEN(condition) \
@@ -173,6 +140,15 @@ typedef struct {
     if (this_test.test_executed_this_pass) \
     { \
         /* We just completed the last WHEN, switch to this when.*/ \
+        if(test_count_failed > previous_test_count_failed)\
+        { \
+                previous_test_count_failed = test_count_failed; \
+        } \
+        else \
+        { \
+            testNumber++; \
+            PRINT_OK(testNumber,this_test.given,this_test.when,this_test.then); \
+        } \
         this_test.current_when_line = __LINE__; \
         return; \
     } \

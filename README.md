@@ -67,22 +67,92 @@ Then execute your tests by running the binary:
 For each WHEN or THEN clause, the parent GIVEN and/or WHEN clauses are re-run, so that the initial state is reset before each test is run. This means that no "setup" or "teardown" functions are necessary -- which are common in other types of test frameworks.
 
 
-## Failures
+## Test Anything Procotol output
+Ouput are TAP compliant. See TAP website for more information ([https://testanything.org/])
 
-When a test fails, you get a message telling you exactly where the problem is:
+Example:
+```
+#---------------------------------------------------
+# test_examples.c: Running Tests...
+#---------------------------------------------------
+ok 1 - GIVEN some integers
+	WHEN I test the ones that are equal
+	THEN the test passes
+not ok 2 - GIVEN some integers
+	WHEN I test the ones that are not equal
+	THEN the test fails
+ ---
+  FAIL:test_examples.c:17
+  Expected:0xffffff9d
+  Actual:0x63
+ ---
+ok 3 - GIVEN some unsigned integers
+	WHEN I test the ones that are equal
+	THEN the test passes
+not ok 4 - GIVEN some unsigned integers
+	WHEN I test the ones that are not equal
+	THEN the test fails
+ ---
+  FAIL:test_examples.c:33
+  Expected:0xffffff9d
+  Actual:0x64
+ ---
+ok 5 - GIVEN some bytes
+	WHEN I test the ones that are equal
+	THEN the test passes
+not ok 6 - GIVEN some bytes
+	WHEN I test the ones that are not equal
+	THEN the test fails
+ ---
+  FAIL:test_examples.c:49
+  Expected:0x99
+  Actual:0xa0
+ ---
+ok 7 - GIVEN some strings
+	WHEN I test the ones that are equal
+	THEN the test passes
+not ok 8 - GIVEN some strings
+	WHEN I test the ones that are not equal
+	THEN the test fails
+ ---
+  FAIL:test_examples.c:65
+  Expected:the quick brown fox
+  Actual:jumps over the
+ ---
+ok 9 - GIVEN some arrays
+	WHEN I test the ones that are equal
+	THEN the test passes
+not ok 10 - GIVEN some arrays
+	WHEN I test the ones that are not equal
+	THEN the test fails
+ ---
+  FAIL:test_examples.c:81
+ ---
+#Failed: 5
+1..10
+```
 
-```
-test_power_button.c: Running Tests...
----------------------------------------------------
-Test at test_power_button.c:6 FAILED
----------------------------------------------------
-  Given: the power is off
-   When: the power button is momentarily pressed
-   Then: the power turns on
----------------------------------------------------
-FAILED at test_power_button.c:20:
-  REQUIRE( power_button_getPowerState() == POWER_OFF )
-```
+## Other REQUIRE tests
+
+The plain-old REQUIRE test doesn't print the expected or actual values if there is an error. If you'd like to print these values, you can use one of these type specific tests:
+
+- `REQUIRE_EQUAL_INT(expected, actual)`
+- `REQUIRE_EQUAL_UINT(expected, actual)`
+- `REQUIRE_EQUAL_BYTE(expected, actual)`
+
+If you'd like something more specific, you can use the raw format function:
+
+- `REQUIRE_EQUAL_FORMAT(expected, actual, format)`
+
+The `format` is a printf-style format, e.g. to compare characters, you would use `%c`.
+
+There's also test for strings:
+
+- `REQUIRE_EQUAL_STRING(expected, actual)`
+
+And one for memory:
+
+- `REQUIRE_EQUAL_MEMORY(expected, actual, size)`
 
 ## Example
 
@@ -122,8 +192,3 @@ RUN_TESTS()
     }
 }
 ```
-
-## To Do
-
-- Add string compare.
-- Add mem compare.
