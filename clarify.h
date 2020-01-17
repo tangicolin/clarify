@@ -23,7 +23,6 @@
             test_count_failed++; \
             testNumber++; \
             PRINT_KO(testNumber,this_test.given,this_test.when,this_test.then); \
-            return; \
         } \
     } while (0)
 
@@ -33,8 +32,7 @@
             test_count_failed++;                                    \
             testNumber++; \
             PRINT_KO_FORMAT_HEX(testNumber,this_test.given,this_test.when,this_test.then,expected,actual); \
-            return;                                                 \
-        }                                                           \
+        }                                                     \
     } while (0)
 
 
@@ -48,7 +46,6 @@
             test_count_failed++;                                    \
             testNumber++;\
             PRINT_KO_FORMAT_STRING(testNumber,this_test.given,this_test.when,this_test.then,expected,actual); \
-            return;                                                 \
         }                                                           \
     } while (0)
 
@@ -58,7 +55,6 @@ do {                                                            \
         test_count_failed++;                                    \
         testNumber++; \
         PRINT_KO(testNumber,this_test.given,this_test.when,this_test.then); \
-        return;                                                 \
     }                                                           \
 } while (0)
 /*
@@ -122,18 +118,18 @@ static int testNumber = 0;
     this_test.last_then_line_executed = 0; \
     this_test.current_when_line = 0; \
     do { \
-        this_test.test_executed_this_pass = false; \
+		this_test.test_executed_this_pass = false; \
         UNIQUE_TEST_FUNCTION_NAME(); \
     } while (this_test.test_executed_this_pass); \
-            if(test_count_failed > previous_test_count_failed)\
-            { \
-                previous_test_count_failed = test_count_failed; \
-            } \
-            else \
-            { \
-                testNumber++; \
-                PRINT_OK(testNumber,this_test.given,this_test.when,this_test.then); \
-            } \
+    if(test_count_failed > previous_test_count_failed)\
+    { \
+        previous_test_count_failed = test_count_failed; \
+    } \
+    else \
+    { \
+        testNumber++; \
+        PRINT_OK(testNumber,this_test.given,this_test.when,this_test.then); \
+    } \
     void UNIQUE_TEST_FUNCTION_NAME (void)
 
 #define WHEN(condition) \
@@ -153,6 +149,10 @@ static int testNumber = 0;
         this_test.current_when_line = __LINE__; \
         return; \
     } \
+    if (this_test.last_then_line_executed >= __LINE__) \
+	{ \
+		this_test.skip_this_clause = true; \
+	} \
     if ((this_test.current_when_line == 0) || (this_test.current_when_line == __LINE__)) \
     { \
         /* This is current when clause, so we're going to run it. */ \
@@ -169,7 +169,7 @@ static int testNumber = 0;
     this_test.skip_this_clause = false; \
     if (this_test.test_executed_this_pass) \
     { \
-        return; \
+		return; \
     } \
     else if (this_test.last_then_line_executed >= __LINE__) \
     { \
