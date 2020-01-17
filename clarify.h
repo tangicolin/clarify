@@ -6,13 +6,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define PRINT_OK(nb,given,when,then) printf("ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n",nb,given,when,then)
+#define PRINT_OK(nb,given,when,then) printf("ok %d - GIVEN %s WHEN %s THEN %s\n",nb,given,when,then)
 
-#define PRINT_KO(nb,given,when,then) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n ---\n",nb,given,when,then,__FILE__, __LINE__)
+#define PRINT_KO(nb,given,when,then) printf("not ok %d - GIVEN %s WHEN %s THEN %s\n ---\n FAIL: %s:%d\n ...\n",nb,given,when,then,__FILE__, __LINE__)
 
-#define PRINT_KO_FORMAT_STRING(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n  Expected:%s\n  Actual:%s\n ---\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
+#define PRINT_KO_FORMAT_STRING(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s WHEN %s THEN %s\n ---\n FAIL: %s:%d\n Expected: %s\n Actual: %s\n ...\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
 
-#define PRINT_KO_FORMAT_HEX(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s\n\tWHEN %s\n\tTHEN %s\n ---\n  FAIL:%s:%d\n  Expected:0x%x\n  Actual:0x%x\n ---\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
+#define PRINT_KO_FORMAT_HEX(nb,given,when,then,expected,actual) printf("not ok %d - GIVEN %s WHEN %s THEN %s\n ---\n FAIL: %s:%d\n Expected: 0x%x\n Actual: 0x%x\n ...\n",nb,given,when,then,__FILE__, __LINE__,expected,actual)
 
 /*
     Require that the expression evaluates to true.
@@ -89,6 +89,7 @@ static int testNumber = 0;
 #define UNIQUE_TEST_FUNCTION_NAME TOKENPASTE2(test_, __LINE__)
 
 #define PRINT_HEADER() \
+    printf("TAP version 13\n"); \
     printf("#---------------------------------------------------\n"); \
     printf("# %s: Running Tests...\n", __FILE__); \
     printf("#---------------------------------------------------\n"); \
